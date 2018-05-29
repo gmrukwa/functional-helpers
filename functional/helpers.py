@@ -29,7 +29,7 @@ class tee:
         self.func = func
         self.once = once
         self._prevent_call = False
-    
+
     def __call__(self, argument):
         if not self._prevent_call:
             self.func(argument)
@@ -38,18 +38,18 @@ class tee:
         return argument
 
 
-def pmap(func, collection):
+def pmap(func, collection, **kwargs):
     with Pool() as pool:
-        return pool.map(func, collection)
+        return pool.map(func, collection, **kwargs)
 
 
 def apply(func, collection):
     return [func(element) for element in collection]
 
 
-def for_each(func, lazy: bool=True, parallel: bool=False):
+def for_each(func, lazy: bool=True, parallel: bool=False, **kwargs):
     if parallel:
-        return partial(pmap, func)
+        return partial(pmap, func, **kwargs)
     if lazy:
         return partial(map, func)
     else:
@@ -59,7 +59,7 @@ def for_each(func, lazy: bool=True, parallel: bool=False):
 def take(collection, n_elements: int):
     for _, element in zip(range(n_elements), collection):
         yield element
-    
+
 
 class iterate:
     def __init__(self, func, times: int):
@@ -67,13 +67,13 @@ class iterate:
             raise ValueError('times < 1')
         self.func = func
         self.times = times
-    
+
     def __call__(self, *args, **kwargs):
         result = self.func(*args, **kwargs)
         for _ in range(self.times-1):
             result = self.func(result)
         return result
-    
+
 
 def progress_bar(description: str=None):
     return partial(tqdm, desc=description)
@@ -90,7 +90,7 @@ def report_value(name: str):
 class broadcast:
     def __init__(self, *functions):
         self.functions = functions
-    
+
     def __call__(self, *args, **kwargs):
         return [func(*args, **kwargs) for func in self.functions]
 
@@ -98,7 +98,7 @@ class broadcast:
 class as_arguments_of:
     def __init__(self, func):
         self.func = func
-    
+
     def __call__(self, argument):
         return self.func(*argument)
 
